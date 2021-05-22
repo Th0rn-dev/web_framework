@@ -24,8 +24,8 @@ class API:
         handler, kwargs = self.find_handler(request_path=request.path)
         if handler is not None:
             if inspect.isclass(handler):
-                handler_function = getattr(handler(), request.method.lower(), None)
-                if handler_function is None:
+                handler = getattr(handler(), request.method.lower(), None)
+                if handler is None:
                     raise AttributeError("Method not allowed", request.method)
             handler(request, response, **kwargs)
         else:
