@@ -37,6 +37,7 @@ class BooksResource:
 def handler(req, resp):
     resp.text = "sample"
 
+
 app.add_route("/sample", handler)
 
 
@@ -45,3 +46,15 @@ def template_handler(req, resp):
     resp.body = app.templates(
         "index.html", context={"name": "Bumbo", "title": "Best Framework"}
     ).encode()
+
+
+def custom_exception_handler(req, resp, exception_cls):
+    resp.text = str(exception_cls)
+
+
+app.add_exception_handler(custom_exception_handler)
+
+
+@app.route("/exception")
+def exception_throwing_handler(request, response):
+    raise AssertionError("This handler should not be used.")
