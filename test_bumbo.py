@@ -1,6 +1,7 @@
 import pytest
 
 from api import API
+from middleware import Middleware
 
 FILE_DIR = "css"
 FILE_NAME = "main.css"
@@ -126,7 +127,7 @@ def test_custom_exception_handler(api, client):
 
 
 def test_404_is_returned_for_noneexistent_static_file(client):
-    assert client.get(f"http://testserver/main.css").status_code == 404
+    assert client.get(f"http://testserver/static/main.css)").status_code == 404
 
 
 def test_assets_are_served(tmpdir_factory):
@@ -135,7 +136,36 @@ def test_assets_are_served(tmpdir_factory):
     api = API(static_dir=str(static_dir))
     client = api.test_session()
 
-    response = client.get(f"http://testserver/{FILE_DIR}/{FILE_NAME}")
+    response = client.get(f"http://testserver/static/{FILE_DIR}/{FILE_NAME}")
 
     assert response.status_code == 200
     assert response.text == FILE_CONTENTS
+
+
+def test_middleware_methods_are_called(api, client):
+    process_request_called = False
+    process_response_called = False
+
+    class CallMiddlewareMethods(Middleware):
+
+        def __init__(self, app):
+            super().__init__(app)
+
+        def process_request(self, req):
+            nonlocal process_request_called
+            process_request_called = True
+
+        def process_response(self, req, resp):
+            nonlocal process_response_called
+            process_response_called = True
+
+    api.add_middleware(CallMiddlewareMethods)
+
+    @api.route("/")
+    def index(req, resp):
+        resp.text = "YOLO"
+
+    client.get("http://testserver/")
+
+    assert process_request_called is True
+    assert process_response_called is True
