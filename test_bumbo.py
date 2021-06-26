@@ -190,24 +190,24 @@ def test_json_response_helper(api, client):
     response = client.get("http://testserver/json")
     json_body = response.json()
 
-    assert json_body.headers["Content-Type"] == "application/json"
+    assert response.headers["Content-Type"] == "application/json"
     assert json_body["name"] == "bumboo"
 
 
 def test_html_response_helper(api, client):
     @api.route("/html")
     def html_helper(req, resp):
-        resp.html = api.template("index.html", context={"title": "Bast title", "name": "Bast name"})
+        resp.html = api.templates("index.html", context={"title": "Best title", "name": "Best name"})
 
-    response = client.get("ttp://testserver/html")
+    response = client.get("http://testserver/html")
 
     assert "text/html" in response.headers["Content-Type"]
-    assert "Bast titte" in response.text
-    assert "Bast name" in response.text
+    assert "Best title" in response.text
+    assert "Best name" in response.text
 
 
 def test_text_response_helper(api, client):
-    response_text = "Just Plane Text"
+    response_text = "Just Plain Text"
 
     @api.route("/text")
     def text_helper(req, resp):
@@ -215,7 +215,7 @@ def test_text_response_helper(api, client):
 
     response = client.get("http://testserver/text")
 
-    assert "text/plane" in response.headers["Content-Type"]
+    assert "text/plain" in response.headers["Content-Type"]
     assert response.text == response_text
 
 
@@ -223,9 +223,9 @@ def test_manually_setting_body(api, client):
     @api.route("/body")
     def body_helper(req, resp):
         resp.body = b"Byte Body"
-        resp.content_type = "text/plane"
+        resp.content_type = "text/plain"
 
     response = client.get("http://testserver/body")
 
-    assert "text/plane" in response.headers["Content-Type"]
-    assert response.text == "Bite Body"
+    assert "text/plain" in response.headers["Content-Type"]
+    assert response.text == "Byte Body"
