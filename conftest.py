@@ -39,3 +39,5 @@ def db():
     DB_PATH = "./test.db"
     if os.path.exists(DB_PATH):
         os.remove(DB_PATH)
+    db = Database(DB_PATH)
+    return db
