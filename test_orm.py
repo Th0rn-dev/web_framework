@@ -73,5 +73,61 @@ def test_save_author_instance(db, Author):
     assert jack.id == 4
 
 
+def test_query_all_authors(db, Author):
+    db.create(Author)
+    jack = Author(name="Jack Ma", age=39)
+    vik = Author(name="Vik Star", age=43)
+    db.save(jack)
+    db.save(vik)
+
+    authors = db.all(Author)
+
+    assert Author._get_select_all_sql() == (
+        "SELECT id, age, name FROM author;",
+        ["id", "age", "name"]
+    )
+    assert len(authors) == 2
+    assert type(authors[0]) == Author
+    assert {a.age for a in authors} == {39, 43}
+    assert {a.name for a in authors} == {"Jack Ma", "Vik Star"}
 
 
+def test_get_author(db, Author):
+    db.create(Author)
+    roman = Author(name="Roman Auth", age="48")
+    db.save(roman)
+
+    roman_from_db = db.get(Author, id=1)
+
+    assert Author._get_select_where_sql(id=1) == (
+        "SELECT id, age, name FROM author WHERE id=?;",
+        ["id", "age", "name"],
+        [1]
+    )
+
+    assert type(roman_from_db) == Author
+    assert roman_from_db.age == 48
+    assert roman_from_db.name == "Roman Auth"
+    assert roman_from_db.id == 1
+
+
+def test_get_book(db, Author, Book):
+    db.create(Author)
+    db.create(Book)
+
+    john = Author(name="John Doe", age=45)
+    arash = Author(name="Arach Kun", age=60)
+
+    book1 = Book(title="Building an ORM", published=False, author=john)
+    book2 = Book(title="Scoring Goals", published=False, author=arash)
+
+    db.save(john)
+    db.save(arash)
+    db.save(book1)
+    db.save(book2)
+
+    book_from_db = db.get(Book, 2)
+
+    assert book_from_db.title == "Scoring Goals"
+    assert book_from_db.author.name == "Arach Kun"
+    assert book_from_db.id == 2
