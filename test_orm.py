@@ -1,8 +1,8 @@
 import sqlite3
 import os
+import pytest
 
 from bumboo.orm import Database, Table, Column, ForeignKey
-
 
 # tests
 
@@ -131,3 +131,29 @@ def test_get_book(db, Author, Book):
     assert book_from_db.title == "Scoring Goals"
     assert book_from_db.author.name == "Arach Kun"
     assert book_from_db.id == 2
+
+
+def test_update_author(db, Author):
+    db.create(Author)
+    john = Author(name="John Doe", age=45)
+    db.save(john)
+
+    john.age = 50
+    john.name = "John Update"
+    db.update(john)
+
+    john_from_db = db.get(Author, id=john.id)
+
+    assert john_from_db.age == 50
+    assert john_from_db.name == "John Update"
+
+
+def test_delete_author(db, Author):
+    db.create(Author)
+    john = Author(name="John Doe", age=45)
+    db.save(john)
+
+    db.delete(Author, id=1)
+
+    with pytest.raises(Exception):
+        db.get(Author, 1)
